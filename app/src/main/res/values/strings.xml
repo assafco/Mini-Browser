@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Mini Browser</string>
+    <string name="input_url">Enter Url</string>
+    <string name="home_url">https://www.google.de/</string>
+    <string name="vertical_ellipsis">&#8942;</string>
+    <string name="show_images">Show Images</string>
+    <string name="history">History</string>
+</resources>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_bar_height"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:baselineAligned="false">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/top_bar_height"
+            android:background="@android:color/white"
+            android:orientation="horizontal"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/nav_left"
+                />
+
+            <View
+                android:layout_width="10dp"
+                android:layout_height="@dimen/top_bar_height"
+                android:background="@android:color/transparent"
+                />
+
+            <ImageView
+                android:id="@+id/forwardButton"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/nav_right"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="@dimen/top_bar_height"
+            android:layout_weight="1"
+            android:background="#cccccc">
+            <ImageView
+                android:id="@+id/webIcon"
+                android:layout_width="@dimen/top_bar_height"
+                android:layout_height="@dimen/top_bar_height"
+                android:contentDescription="favicon"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:padding="11dp"
+                android:src="@drawable/internet"
+                android:background="#01000000"
+                android:layout_gravity="center_vertical"/>
+
+
+
+            <EditText
+                android:id="@+id/textUrl"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="#01000000"
+                android:hint="@string/input_url"
+                android:imeOptions="actionGo"
+                android:inputType="textUri"
+                android:maxLines="1"
+                android:textSize="15sp"
+                android:textColor="#606060"
+                android:textColorHint="#9f9f9f"
+                android:layout_gravity="center_vertical"
+                tools:ignore="NestedWeights" />
+
+            <ImageView
+                android:id="@+id/btnStart"
+                android:layout_width="@dimen/top_bar_height"
+                android:layout_height="@dimen/top_bar_height"
+                android:contentDescription="refresh"
+                android:padding="11dp"
+                android:layout_marginRight="2dp"
+                android:layout_marginEnd="2dp"
+                android:src="@drawable/refresh"
+                android:background="#01000000"
+                android:layout_gravity="center_vertical"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="@dimen/top_bar_height"
+            android:layout_height="@dimen/top_bar_height"
+            android:background="@android:color/white"
+            android:orientation="horizontal"
+            android:gravity="center"
+            >
+
+            <TextView
+                android:id="@+id/menuButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="@string/vertical_ellipsis"
+                android:textColor="#000"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textSize="25sp"
+                android:gravity="center" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="1dp"
+        android:layout_marginBottom="1dp"
+        android:background="#d1d1d1">
+
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:max="100"
+            android:progress="50" />
+    </FrameLayout>
+
+</LinearLayout>
