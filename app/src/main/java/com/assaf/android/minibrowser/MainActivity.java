@@ -5,6 +5,7 @@ import androidx.core.graphics.drawable.DrawableCompat;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -12,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.KeyEvent;
@@ -35,6 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.prefs.Preferences;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, MenuItem.OnMenuItemClickListener, PopupMenu.OnMenuItemClickListener{
 
@@ -47,11 +50,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView btnStart;
     private InputMethodManager manager;
     private long exitTime = 0;
+    private PopupMenu settingsMenu;
+    private SharedPreferences prefs;
 
     private static final String HTTP = "http://";
     private static final String HTTPS = "https://";
+    private static final String SHOW_IMAGES = "SHOW_IMAGES";
     private static final int PRESS_BACK_EXIT_GAP = 2000;
     private static final String TAG = MainActivity.class.getName();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         manager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         initView();
         initWeb();
@@ -89,6 +97,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         goBack.setOnClickListener(this);
         goForward.setOnClickListener(this);
         menuButton.setOnClickListener(this);
+
+        settingsMenu = new PopupMenu(this, menuButton);
+        settingsMenu.setOnMenuItemClickListener(this);
+        MenuInflater inflater = settingsMenu.getMenuInflater();
+        inflater.inflate(R.menu.settings_menu, settingsMenu.getMenu());
+        settingsMenu.getMenu().findItem(R.id.showImages).setChecked(prefs.getBoolean(SHOW_IMAGES, false));
 
         textUrl.setOnFocusChangeListener((view, hasFocus) -> {
             if (hasFocus) {
@@ -160,37 +174,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     textUrl.clearFocus();
                 } else {
+                    webView.clearCache(true);
                     webView.reload();
                 }
                 break;
-
             case R.id.backButton:
                 webView.goBack();
                 break;
-
             case R.id.forwardButton:
                 webView.goForward();
                 break;
-
             case R.id.menuButton:
-                PopupMenu popup = new PopupMenu(this, v);
-                popup.setOnMenuItemClickListener(this);
-                MenuInflater inflater = popup.getMenuInflater();
-                inflater.inflate(R.menu.settings_menu, popup.getMenu());
-                popup.show();
-
+                settingsMenu.show();
                 break;
-
-
             default:
+                break;
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.showImages:
-                item.setChecked(true);
+                item.setChecked(!item.isChecked());
+                prefs.edit().putBoolean(SHOW_IMAGES, item.isChecked()).apply();
                 return true;
             case R.id.history:
 
@@ -270,6 +278,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } catch (Exception e) {
                 return true;
             }
+        }
+
+        @Override
+        public void onLoadResource(WebView view, String url){
+            if (settingsMenu != null && settingsMenu.getMenu() != null && settingsMenu.getMenu().findItem(R.id.showImages) != null && settingsMenu.getMenu().findItem(R.id.showImages).isChecked()) {
+                if (url.endsWith(".gif") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".png") || url.endsWith(".webp")) {
+                    view.stopLoading();
+                    return;
+                }
+            }
+            super.onLoadResource(view, url);
         }
 
         @Override
