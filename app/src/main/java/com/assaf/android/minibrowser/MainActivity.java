@@ -32,6 +32,9 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.assaf.android.minibrowser.History.DatabaseManager;
+import com.assaf.android.minibrowser.History.Site;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -248,13 +251,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.doUpdateVisitedHistory(view, url, isReload);
             if (webView.canGoBack()) {
                 setImageTint(goBack, Color.parseColor("#000000"));
-            }else {
+            } else {
                 setImageTint(goBack, Color.parseColor("#cccccc"));
             }
 
             if (webView.canGoForward()) {
                 setImageTint(goForward, Color.parseColor("#000000"));
-            }else {
+            } else {
                 setImageTint(goForward, Color.parseColor("#cccccc"));
             }
         }
@@ -281,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        public void onLoadResource(WebView view, String url){
+        public void onLoadResource(WebView view, String url) {
             if (settingsMenu != null && settingsMenu.getMenu() != null && settingsMenu.getMenu().findItem(R.id.showImages) != null && settingsMenu.getMenu().findItem(R.id.showImages).isChecked()) {
                 if (url.endsWith(".gif") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".png") || url.endsWith(".webp")) {
                     view.stopLoading();
@@ -305,6 +308,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             progressBar.setVisibility(View.INVISIBLE);
             setTitle(webView.getTitle());
             textUrl.setText(webView.getTitle());
+
+            try {
+                Site site = DatabaseManager.getInstance(MainActivity.this).getDb().siteDao().findByUrl(url);
+                Date visitDate = Calendar.getInstance().getTime();
+                if (site == null) {
+                    site = new Site();
+                    site.siteUrl = url;
+                    site.siteName = webView.getTitle();
+                    site.visitDate = visitDate;
+                    DatabaseManager.getInstance(MainActivity.this).getDb().siteDao().insertAll(site);
+                } else {
+                    site.visitDate = Calendar.getInstance().getTime();
+                    DatabaseManager.getInstance(getApplicationContext()).getDb().siteDao().updateVisitDate(visitDate, site.sid);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Saving to room didn't work: " + e.getMessage());
+            }
         }
     }
 
@@ -329,6 +349,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.onReceivedIcon(view, icon);
             if (icon != null) {
                 webIcon.setImageBitmap(icon);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                icon.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                try {
+                    DatabaseManager.getInstance(MainActivity.this).getDb().siteDao().updateIcon(stream.toByteArray(), webView.getUrl());
+                }catch (Exception e){
+                    Log.e(TAG, "Failed to update site icon: " + e.getMessage());
+                }
             }
         }
 
