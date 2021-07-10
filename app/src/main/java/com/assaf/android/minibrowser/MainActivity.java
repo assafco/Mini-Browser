@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         settingsMenu.setOnMenuItemClickListener(this);
         MenuInflater inflater = settingsMenu.getMenuInflater();
         inflater.inflate(R.menu.settings_menu, settingsMenu.getMenu());
-        settingsMenu.getMenu().findItem(R.id.showImages).setChecked(prefs.getBoolean(SHOW_IMAGES, false));
+        settingsMenu.getMenu().findItem(R.id.showImages).setChecked(prefs.getBoolean(SHOW_IMAGES, true));
 
         textUrl.setOnFocusChangeListener((view, hasFocus) -> {
             if (hasFocus) {
@@ -142,6 +142,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         settings.setAllowFileAccess(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setDomStorageEnabled(true);
+        settings.setLoadsImagesAutomatically(false);
+        settings.setBlockNetworkLoads (true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -204,7 +206,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 prefs.edit().putBoolean(SHOW_IMAGES, item.isChecked()).apply();
                 return true;
             case R.id.history:
-
+                Intent myIntent = new Intent(this, HistoryActivity.class);
+                startActivity(myIntent);
                 return true;
             default:
                 return false;
@@ -285,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onLoadResource(WebView view, String url) {
-            if (settingsMenu != null && settingsMenu.getMenu() != null && settingsMenu.getMenu().findItem(R.id.showImages) != null && settingsMenu.getMenu().findItem(R.id.showImages).isChecked()) {
+            if (settingsMenu != null && settingsMenu.getMenu() != null && settingsMenu.getMenu().findItem(R.id.showImages) != null && !settingsMenu.getMenu().findItem(R.id.showImages).isChecked()) {
                 if (url.endsWith(".gif") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".png") || url.endsWith(".webp")) {
                     view.stopLoading();
                     return;
