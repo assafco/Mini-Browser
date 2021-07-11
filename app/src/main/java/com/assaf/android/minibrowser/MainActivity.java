@@ -1,8 +1,10 @@
 package com.assaf.android.minibrowser;
 
+import android.content.res.AssetManager;
+import android.webkit.*;
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.drawable.DrawableCompat;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,25 +24,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.PopupMenu;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
 import com.assaf.android.minibrowser.History.DatabaseManager;
 import com.assaf.android.minibrowser.History.Site;
-
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.prefs.Preferences;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, MenuItem.OnMenuItemClickListener, PopupMenu.OnMenuItemClickListener{
 
@@ -61,8 +53,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String SHOW_IMAGES = "SHOW_IMAGES";
     private static final int PRESS_BACK_EXIT_GAP = 2000;
     private static final String TAG = MainActivity.class.getName();
+    private MenuItem cbShowImages;
 
-
+    @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,7 +98,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         settingsMenu.setOnMenuItemClickListener(this);
         MenuInflater inflater = settingsMenu.getMenuInflater();
         inflater.inflate(R.menu.settings_menu, settingsMenu.getMenu());
-        settingsMenu.getMenu().findItem(R.id.showImages).setChecked(prefs.getBoolean(SHOW_IMAGES, true));
+        cbShowImages = settingsMenu.getMenu().findItem(R.id.showImages);
+        cbShowImages.setChecked(prefs.getBoolean(SHOW_IMAGES, true));
 
         textUrl.setOnFocusChangeListener((view, hasFocus) -> {
             if (hasFocus) {
@@ -142,8 +136,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         settings.setAllowFileAccess(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setDomStorageEnabled(true);
-        settings.setLoadsImagesAutomatically(false);
-        settings.setBlockNetworkLoads (true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -247,6 +239,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DrawableCompat.setTintMode(mWrappedDrawable, PorterDuff.Mode.SRC_IN);
     }
 
+    private WebResourceResponse loadFromAssets(String mimeType){
+
+        AssetManager assetManager = getAssets();
+        InputStream input;
+        try {
+            input = assetManager.open("placeholder.png");
+            return new WebResourceResponse(mimeType, "UTF-8", input);
+        } catch (IOException e) {
+            Log.e(TAG, "Error loading from assets: " + e.getMessage());
+        }
+        return null;
+    }
+
 
     private class BrowserWebViewClient extends WebViewClient {
         @Override
@@ -265,6 +270,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
+        @SuppressWarnings("deprecation")
+        @Override
+        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+            if (cbShowImages != null && !cbShowImages.isChecked()) {
+                String ext = MimeTypeMap.getFileExtensionFromUrl(url);
+                String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+
+                if (mime != null && mime.contains("image")) {
+                    try {
+                        return loadFromAssets(mime);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return super.shouldInterceptRequest(view, url);
+                    }
+                } else {
+                    return super.shouldInterceptRequest(view, url);
+                }
+            }else {
+                return super.shouldInterceptRequest(view, url);
+            }
+
+        }
+
+        @SuppressWarnings("deprecation")
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
@@ -284,17 +313,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } catch (Exception e) {
                 return true;
             }
-        }
-
-        @Override
-        public void onLoadResource(WebView view, String url) {
-            if (settingsMenu != null && settingsMenu.getMenu() != null && settingsMenu.getMenu().findItem(R.id.showImages) != null && !settingsMenu.getMenu().findItem(R.id.showImages).isChecked()) {
-                if (url.endsWith(".gif") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".png") || url.endsWith(".webp")) {
-                    view.stopLoading();
-                    return;
-                }
-            }
-            super.onLoadResource(view, url);
         }
 
         @Override
