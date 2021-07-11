@@ -6,12 +6,9 @@ import android.content.Context;
 import androidx.room.Room;
 
 public class DatabaseManager {
-    private static final String TAG = DatabaseManager.class.getName();
     @SuppressLint("StaticFieldLeak")
     private static DatabaseManager INSTANCE;
-    @SuppressLint("StaticFieldLeak")
-    private static Context context;
-    private BrowserDatabase db;
+    private final BrowserDatabase db;
 
     public DatabaseManager(Context context){
         db = Room.databaseBuilder(context,

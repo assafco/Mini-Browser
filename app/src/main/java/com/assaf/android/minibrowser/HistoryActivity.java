@@ -3,14 +3,12 @@ package com.assaf.android.minibrowser;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-
 import com.assaf.android.minibrowser.History.DatabaseManager;
 import com.assaf.android.minibrowser.History.Site;
 import com.assaf.android.minibrowser.adapters.HistoryRecyclerViewAdapter;
@@ -35,7 +33,7 @@ public class HistoryActivity extends AppCompatActivity {
         ImageView ivCloseActivity = findViewById(R.id.closeActivity);
         ivCloseActivity.setOnClickListener(v -> finish());
 
-        RecyclerView rvHistory = (RecyclerView) findViewById(R.id.rvHistory);
+        RecyclerView rvHistory = findViewById(R.id.rvHistory);
         rvHistory.setHasFixedSize(true);
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
 

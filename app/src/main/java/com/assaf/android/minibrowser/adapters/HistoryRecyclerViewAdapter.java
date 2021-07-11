@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class HistoryRecyclerViewAdapter extends RecyclerView.Adapter<HistoryRecyclerViewAdapter.ViewHolder> {
     private List<Site> myDataLists;
-    private Context context;
+    private final Context context;
 
     public HistoryRecyclerViewAdapter(List<Site> myDataLists, Context context) {
         this.myDataLists = myDataLists;
