@@ -269,13 +269,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        @SuppressWarnings("deprecation")
         @Override
-        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             if (cbShowImages != null && !cbShowImages.isChecked()) {
+                String url = request.getUrl().toString();
                 String ext = MimeTypeMap.getFileExtensionFromUrl(url);
                 String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
-
                 if (mime != null && mime.contains("image")) {
                     try {
                         return loadFromAssets(mime);
@@ -284,10 +283,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         return super.shouldInterceptRequest(view, url);
                     }
                 } else {
-                    return super.shouldInterceptRequest(view, url);
+                    return super.shouldInterceptRequest(view, request);
                 }
             }else {
-                return super.shouldInterceptRequest(view, url);
+                return super.shouldInterceptRequest(view, request);
             }
 
         }
