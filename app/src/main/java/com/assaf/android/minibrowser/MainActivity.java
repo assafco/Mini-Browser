@@ -1,5 +1,6 @@
 package com.assaf.android.minibrowser;
 
+import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.webkit.*;
 import android.widget.*;
@@ -30,6 +31,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Date;
@@ -135,6 +138,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         settings.setAllowFileAccess(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setDomStorageEnabled(true);
+
+        if (0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE)) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -269,27 +276,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             if (cbShowImages != null && !cbShowImages.isChecked()) {
-                String url = request.getUrl().toString();
-                String ext = MimeTypeMap.getFileExtensionFromUrl(url);
-                String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
-                if ((mime != null && mime.contains("image")) || (ext != null && ext.contains("img"))) {
-                    try {
+                URLConnection connection;
+                try {
+                    String url = request.getUrl().toString();
+                    connection = new URL(url).openConnection();
+                    String contentType = connection.getHeaderField("Content-Type");
+                    boolean image = contentType.startsWith("image/");
+                    String ext = MimeTypeMap.getFileExtensionFromUrl(url);
+                    String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+                    if (image) {
                         return loadFromAssets(mime);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return super.shouldInterceptRequest(view, url);
+                    } else {
+                        return super.shouldInterceptRequest(view, request);
                     }
-                } else {
+                } catch (Exception e) {
+                    e.printStackTrace();
                     return super.shouldInterceptRequest(view, request);
                 }
+
             }else {
                 return super.shouldInterceptRequest(view, request);
             }
-
         }
 
         @Override
